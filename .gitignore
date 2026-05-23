@@ -1,0 +1,37 @@
+# .NET Build outputs
+src/bin/
+src/obj/
+bin/
+
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Mono auto generated files
+mono_crash.*
+
+# Visual Studio files
+.vs/
+[Dd]ebug/
+[DebugSub]/
+[Rr]elease/
+x64/
+x86/
+[Aa]pp_Data/
+My-Project/
+[Bb]in/
+[Oo]bj/
+Generated Files/
+
+# Visual Studio Code
+.vscode/
+
+# Pester and Test Outputs
+TestResults/
+*.log
+
+# Windows thumbnail cache and folder settings
+Thumbs.db
+ehthumbs.db
+Desktop.ini
