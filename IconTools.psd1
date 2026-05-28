@@ -12,13 +12,13 @@
     GUID = 'd7b5ec1e-5eb8-47fb-9eb4-3e9a7e089201'
 
     # Author of this module
-    Author = 'John'
+    Author = 'John Gibbs'
 
     # Company or vendor of this module
-    CompanyName = 'Personal'
+    CompanyName = 'John Gibbs'
 
     # Copyright statement for this module
-    Copyright = '(c) 2026 John. All rights reserved.'
+    Copyright = '(c) 2026 John Gibbs. All rights reserved.'
 
     # Description of the functionality provided by this module
     Description = 'PowerShell module to list, extract, and compile Windows Icon (.ico) and PNG resources from executables, DLLs, and image folders.'
