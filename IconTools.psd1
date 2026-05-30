@@ -46,7 +46,7 @@
     PrivateData = @{
         PSData = @{
             Tags = @('Icon', 'Extract', 'Resource', 'PE', 'EXE', 'DLL', 'PNG', 'ICO')
-            ProjectUri = 'https://github.com/Personal/IconTools'
+            ProjectUri = 'https://github.com/johngibbs/IconTools'
         }
     }
 }
