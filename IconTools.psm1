@@ -5,16 +5,22 @@ $ErrorActionPreference = 'Stop'
 
 # Determine the correct binary directory based on the PowerShell Edition (Core/7 vs Desktop/5.1)
 $AssemblyPath = ""
-if ($PSVersionTable.PSEdition -eq "Core") {
+if ($PSVersionTable.PSEdition -eq "Core")
+{
     $AssemblyPath = Join-Path $PSScriptRoot "bin/net6.0-windows/IconTools.dll"
-} else {
+}
+else
+{
     $AssemblyPath = Join-Path $PSScriptRoot "bin/net48/IconTools.dll"
 }
 
-if (-not (Test-Path $AssemblyPath)) {
+if (-not (Test-Path $AssemblyPath))
+{
     # Non-blocking warning during module check, but throws error if cmdlets are actually executed
     Write-Warning "IconTools binary dependency not found at '$AssemblyPath'. Please run 'build.ps1' to compile the assembly before using module functions."
-} else {
+}
+else
+{
     Write-Verbose "Loading IconTools binary assembly from '$AssemblyPath'..."
     Add-Type -LiteralPath $AssemblyPath
 }
@@ -31,7 +37,8 @@ if (-not (Test-Path $AssemblyPath)) {
 .EXAMPLE
     Get-ChildItem C:\Windows\*.exe | Get-IconResource
 #>
-function Get-IconResource {
+function Get-IconResource
+{
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
@@ -39,25 +46,32 @@ function Get-IconResource {
         [string[]]$Path
     )
 
-    process {
+    process
+    {
         # Check if type is loaded
-        if (-not ([System.Management.Automation.PSTypeName]'IconTools.IconExtractor').Type) {
+        if (-not ([System.Management.Automation.PSTypeName]'IconTools.IconExtractor').Type)
+        {
             throw "IconTools type not loaded. Please build the assembly by running build.ps1."
         }
 
-        foreach ($p in $Path) {
-            try {
+        foreach ($p in $Path)
+        {
+            try
+            {
                 $resolvedPaths = Resolve-Path -Path $p | Select-Object -ExpandProperty Path
-                foreach ($resolvedPath in $resolvedPaths) {
+                foreach ($resolvedPath in $resolvedPaths)
+                {
                     Write-Verbose "Scanning icon resources in: $resolvedPath"
                     $groups = [IconTools.IconExtractor]::GetIconGroups($resolvedPath)
-                    foreach ($group in $groups) {
+                    foreach ($group in $groups)
+                    {
                         # Add SourcePath to output object
                         $group | Add-Member -MemberType NoteProperty -Name "SourcePath" -Value $resolvedPath -PassThru
                     }
                 }
             }
-            catch {
+            catch
+            {
                 Write-Error $_
             }
         }
@@ -87,7 +101,8 @@ function Get-IconResource {
 .EXAMPLE
     Get-IconResource -Path C:\Windows\notepad.exe | Export-IconResource -OutputPath C:\temp\notepad_icons
 #>
-function Export-IconResource {
+function Export-IconResource
+{
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
@@ -111,35 +126,43 @@ function Export-IconResource {
         [switch]$PassThru
     )
 
-    process {
-        if (-not ([System.Management.Automation.PSTypeName]'IconTools.IconExtractor').Type) {
+    process
+    {
+        if (-not ([System.Management.Automation.PSTypeName]'IconTools.IconExtractor').Type)
+        {
             throw "IconTools type not loaded. Please build the assembly by running build.ps1."
         }
 
         # Resolve OutputPath to absolute path (does not need to exist yet)
         $absoluteOutputPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputPath)
 
-        foreach ($p in $Path) {
-            try {
+        foreach ($p in $Path)
+        {
+            try
+            {
                 $resolvedPaths = Resolve-Path -Path $p | Select-Object -ExpandProperty Path
-                foreach ($resolvedPath in $resolvedPaths) {
-                    
+                foreach ($resolvedPath in $resolvedPaths)
+                {
                     # Resolve names to export
                     $targetNames = $Name
-                    if (-not $targetNames) {
+                    if (-not $targetNames)
+                    {
                         # Extract all icon groups if none specified
                         $targetNames = [IconTools.IconExtractor]::GetIconGroups($resolvedPath) | Select-Object -ExpandProperty Name
                     }
 
-                    if (-not $targetNames -or $targetNames.Count -eq 0) {
+                    if (-not $targetNames -or $targetNames.Count -eq 0)
+                    {
                         Write-Verbose "No icon resources found in: $resolvedPath"
                         continue
                     }
 
-                    foreach ($nameVal in $targetNames) {
+                    foreach ($nameVal in $targetNames)
+                    {
                         # Safe file name construction from resource name
                         $cleanName = $nameVal
-                        if ($cleanName.StartsWith('#')) {
+                        if ($cleanName.StartsWith('#'))
+                        {
                             $cleanName = $cleanName.Substring(1)
                         }
 
@@ -147,39 +170,46 @@ function Export-IconResource {
                         $targetFile = Join-Path $absoluteOutputPath "$baseFileName.ico"
 
                         # Check overwrite condition for ICO
-                        if (-not $Force -and ($Format -eq 'Ico' -or $Format -eq 'All') -and (Test-Path $targetFile)) {
+                        if (-not $Force -and ($Format -eq 'Ico' -or $Format -eq 'All') -and (Test-Path $targetFile))
+                        {
                             Write-Warning "File '$targetFile' already exists. Use -Force to overwrite."
                             continue
                         }
 
-                        if ($PSCmdlet.ShouldProcess("Resource '$nameVal' in '$resolvedPath'", "Export to '$absoluteOutputPath' in format '$Format'")) {
+                        if ($PSCmdlet.ShouldProcess("Resource '$nameVal' in '$resolvedPath'", "Export to '$absoluteOutputPath' in format '$Format'"))
+                        {
                             $exportFormat = [IconTools.ExportFormat]::$Format
                             
                             # Call the C# method
                             [IconTools.IconExtractor]::ExtractIcon($resolvedPath, $nameVal, $targetFile, $exportFormat)
 
-                            if ($PassThru) {
+                            if ($PassThru)
+                            {
                                 # Build result list
-                                if ($Format -eq 'Ico' -or $Format -eq 'All') {
+                                if ($Format -eq 'Ico' -or $Format -eq 'All')
+                                {
                                     $icoFile = if ($Format -eq 'Ico') { $targetFile } else { "$targetFile.ico" }
-                                    if (Test-Path $icoFile) {
-                                        [PSCustomObject]@{
-                                            Path         = $icoFile
-                                            Format       = 'Ico'
+                                    if (Test-Path $icoFile)
+                                    {
+                                        [PSCustomObject][Ordered]@{
+                                            Path = $icoFile
+                                            Format = 'Ico'
                                             ResourceName = $nameVal
-                                            SourcePath   = $resolvedPath
+                                            SourcePath = $resolvedPath
                                         }
                                     }
                                 }
-                                if ($Format -eq 'Png' -or $Format -eq 'All') {
+                                if ($Format -eq 'Png' -or $Format -eq 'All')
+                                {
                                     # PNG frames are named like [targetFile]_[width]x[height].png
                                     $pngFiles = Get-ChildItem -Path $absoluteOutputPath -Filter "$baseFileName`_*.png"
-                                    foreach ($png in $pngFiles) {
-                                        [PSCustomObject]@{
-                                            Path         = $png.FullName
-                                            Format       = 'Png'
+                                    foreach ($png in $pngFiles)
+                                    {
+                                        [PSCustomObject][Ordered]@{
+                                            Path = $png.FullName
+                                            Format = 'Png'
                                             ResourceName = $nameVal
-                                            SourcePath   = $resolvedPath
+                                            SourcePath = $resolvedPath
                                         }
                                     }
                                 }
@@ -188,7 +218,8 @@ function Export-IconResource {
                     }
                 }
             }
-            catch {
+            catch
+            {
                 Write-Error $_
             }
         }
@@ -211,7 +242,8 @@ function Export-IconResource {
 .EXAMPLE
     Get-ChildItem C:\temp\icons\*.png | New-IconFile -OutputPath C:\temp\app.ico
 #>
-function New-IconFile {
+function New-IconFile
+{
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
@@ -225,26 +257,34 @@ function New-IconFile {
         [switch]$Force
     )
 
-    begin {
-        if (-not ([System.Management.Automation.PSTypeName]'IconTools.IconExtractor').Type) {
+    begin
+    {
+        if (-not ([System.Management.Automation.PSTypeName]'IconTools.IconExtractor').Type)
+        {
             throw "IconTools type not loaded. Please build the assembly by running build.ps1."
         }
         $allPngPaths = New-Object System.Collections.Generic.List[string]
     }
 
-    process {
-        foreach ($p in $Path) {
+    process
+    {
+        foreach ($p in $Path)
+        {
             $resolvedPaths = Resolve-Path -Path $p | Select-Object -ExpandProperty Path
-            foreach ($resolvedPath in $resolvedPaths) {
-                if (Test-Path $resolvedPath -PathType Leaf) {
+            foreach ($resolvedPath in $resolvedPaths)
+            {
+                if (Test-Path $resolvedPath -PathType Leaf)
+                {
                     $allPngPaths.Add($resolvedPath)
                 }
             }
         }
     }
 
-    end {
-        if ($allPngPaths.Count -eq 0) {
+    end
+    {
+        if ($allPngPaths.Count -eq 0)
+        {
             Write-Error "No input PNG files found to package."
             return
         }
@@ -252,19 +292,24 @@ function New-IconFile {
         # Resolve OutputPath to absolute path
         $absoluteOutputPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputPath)
         
-        if (Test-Path $absoluteOutputPath) {
-            if (-not $Force) {
+        if (Test-Path $absoluteOutputPath)
+        {
+            if (-not $Force)
+            {
                 Write-Warning "The output file '$absoluteOutputPath' already exists. Use -Force to overwrite."
                 return
             }
         }
 
-        if ($PSCmdlet.ShouldProcess($absoluteOutputPath, "Create multi-resolution Icon from $($allPngPaths.Count) PNG files")) {
-            try {
+        if ($PSCmdlet.ShouldProcess($absoluteOutputPath, "Create multi-resolution Icon from $($allPngPaths.Count) PNG files"))
+        {
+            try
+            {
                 [IconTools.IconExtractor]::CreateIconFromPngs($allPngPaths.ToArray(), $absoluteOutputPath)
                 Write-Verbose "Successfully compiled ICO file at '$absoluteOutputPath'."
             }
-            catch {
+            catch
+            {
                 Write-Error $_
             }
         }
