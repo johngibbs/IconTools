@@ -180,12 +180,12 @@ function Export-IconResource
                         {
                             $exportFormat = [IconTools.ExportFormat]::$Format
                             
-                            # Call the C# method
+                            # Export the icon resource
                             [IconTools.IconExtractor]::ExtractIcon($resolvedPath, $nameVal, $targetFile, $exportFormat)
 
                             if ($PassThru)
                             {
-                                # Build result list
+                                # Output objects representing the created files
                                 if ($Format -eq 'Ico' -or $Format -eq 'All')
                                 {
                                     $icoFile = if ($Format -eq 'Ico') { $targetFile } else { "$targetFile.ico" }
